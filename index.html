@@ -220,24 +220,35 @@ function analyze() {
   if (!code) return;
   showLoading();
 
-  var prompt = 'You are an expert automotive diagnostic technician. Analyze the OBD-II fault code "' + code + '" and return ONLY a valid JSON object with no markdown, no backticks, no extra text. Use this exact structure: {"code":"' + code + '","name":"short official name","system":"e.g. Engine","severity":"Low or Medium or High","what_it_means":"2-3 sentence plain English explanation","safe_to_drive":"Yes or Caution or No","drive_explanation":"1-2 sentences","causes":[{"rank":1,"description":"most likely cause","probability":"~60%"},{"rank":2,"description":"second cause","probability":"~25%"},{"rank":3,"description":"third cause","probability":"~15%"}],"repair_costs":[{"repair":"fix 1","cost_range":"$X-$Y","note":"note"},{"repair":"fix 2","cost_range":"$X-$Y","note":"note"},{"repair":"fix 3","cost_range":"$X-$Y","note":"note"}],"diagnostic_steps":["step 1","step 2","step 3","step 4"],"related_codes":["P0XXX","P0XXX"],"pro_tip":"one insider tip"}';
+  // This prompt explicitly asks for raw JSON to minimize parsing errors
+  var prompt = 'Analyze the OBD-II fault code "' + code + '" and return ONLY a valid JSON object. Use this exact structure: {"code":"' + code + '","name":"short official name","system":"e.g. Engine","severity":"Low or Medium or High","what_it_means":"2-3 sentence plain English explanation","safe_to_drive":"Yes or Caution or No","drive_explanation":"1-2 sentences","causes":[{"rank":1,"description":"most likely cause","probability":"~60%"},{"rank":2,"description":"second cause","probability":"~25%"},{"rank":3,"description":"third cause","probability":"~15%"}],"repair_costs":[{"repair":"fix 1","cost_range":"$X-$Y","note":"note"},{"repair":"fix 2","cost_range":"$X-$Y","note":"note"},{"repair":"fix 3","cost_range":"$X-$Y","note":"note"}],"diagnostic_steps":["step 1","step 2","step 3","step 4"],"related_codes":["P0XXX","P0XXX"],"pro_tip":"one insider tip"}';
 
   fetch('/api/diagnose', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ code: prompt })
   })
-  .then(function(res) { return res.json(); })
+  .then(function(res) { 
+    if (!res.ok) throw new Error('Network response was not ok');
+    return res.json(); 
+  })
   .then(function(data) {
-    var text = data.content.map(function(b) { return b.text || ''; }).join('');
-    var clean = text.replace(/```json|```/g, '').trim();
-    var d = JSON.parse(clean);
+    // Correctly extracting the text from Anthropic's response structure
+    var rawText = data.content[0].text;
+
+    // Remove markdown code blocks if the AI included them
+    var cleanJson = rawText.replace(/```json|```/g, '').trim();
+
+    // Parse the cleaned string into a JavaScript object
+    var parsedData = JSON.parse(cleanJson);
+    
     hideLoading();
-    renderResult(d);
+    renderResult(parsedData);
   })
   .catch(function(err) {
     hideLoading();
-    showError('Analysis failed. Please try again. Error: ' + err.message);
+    console.error('Detailed Error:', err);
+    showError('Analysis failed. Error: ' + err.message);
   });
 }
 
