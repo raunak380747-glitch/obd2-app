@@ -7,148 +7,62 @@
 <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Barlow:wght@300;400;500;600&family=Barlow+Condensed:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
   :root {
-    --bg: #0d0f0e;
-    --surface: #141716;
-    --surface2: #1b1e1c;
-    --border: #2a2e2b;
-    --accent: #00e87a;
-    --accent-dim: #00a855;
-    --accent-glow: rgba(0,232,122,0.12);
-    --warn: #f5a623;
-    --danger: #e84040;
-    --info: #4db8ff;
-    --text: #e8ede9;
-    --text-muted: #6b7569;
-    --text-dim: #9aa395;
+    --bg: #0d0f0e; --surface: #141716; --surface2: #1b1e1c;
+    --border: #2a2e2b; --accent: #00e87a; --accent-dim: #00a855;
+    --accent-glow: rgba(0,232,122,0.12); --warn: #f5a623;
+    --danger: #e84040; --info: #4db8ff; --text: #e8ede9;
+    --text-muted: #6b7569; --text-dim: #9aa395;
     --mono: 'Share Tech Mono', monospace;
     --sans: 'Barlow', sans-serif;
     --cond: 'Barlow Condensed', sans-serif;
   }
-
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: var(--sans);
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-  }
-
-  /* grid bg */
+  body { background: var(--bg); color: var(--text); font-family: var(--sans); min-height: 100vh; }
   body::before {
-    content: '';
-    position: fixed;
-    inset: 0;
-    background-image:
-      linear-gradient(rgba(0,232,122,0.03) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(0,232,122,0.03) 1px, transparent 1px);
-    background-size: 40px 40px;
-    pointer-events: none;
-    z-index: 0;
+    content: ''; position: fixed; inset: 0;
+    background-image: linear-gradient(rgba(0,232,122,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(0,232,122,0.03) 1px, transparent 1px);
+    background-size: 40px 40px; pointer-events: none; z-index: 0;
   }
-
   .wrap { position: relative; z-index: 1; max-width: 860px; margin: 0 auto; padding: 2rem 1.5rem 4rem; }
-
-  /* header */
   .header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 2.5rem; }
-  .logo-block {}
   .logo-eyebrow { font-family: var(--mono); font-size: 10px; color: var(--accent); letter-spacing: 3px; text-transform: uppercase; margin-bottom: 6px; }
   .logo-title { font-family: var(--cond); font-size: 36px; font-weight: 700; letter-spacing: -0.5px; line-height: 1; color: var(--text); }
   .logo-title span { color: var(--accent); }
   .status-pill { font-family: var(--mono); font-size: 10px; color: var(--accent); border: 1px solid var(--accent-dim); border-radius: 2px; padding: 4px 10px; display: flex; align-items: center; gap: 6px; margin-top: 6px; }
   .status-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); animation: pulse 2s infinite; }
-  @keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:0.3; } }
+  @keyframes pulse { 0%,100%{opacity:1}50%{opacity:0.3} }
 
-  /* scanner input */
-  .scanner-box {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 4px;
-    padding: 1.5rem;
-    margin-bottom: 1.5rem;
-    position: relative;
-    overflow: hidden;
-  }
-  .scanner-box::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; right: 0;
-    height: 2px;
-    background: linear-gradient(90deg, transparent, var(--accent), transparent);
-  }
+  .scanner-box { background: var(--surface); border: 1px solid var(--border); border-radius: 4px; padding: 1.5rem; margin-bottom: 1.5rem; position: relative; overflow: hidden; }
+  .scanner-box::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, transparent, var(--accent), transparent); }
   .scanner-label { font-family: var(--mono); font-size: 10px; color: var(--text-muted); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 10px; }
   .input-row { display: flex; gap: 10px; align-items: stretch; }
-  .code-input {
-    flex: 1;
-    background: var(--bg);
-    border: 1px solid var(--border);
-    border-radius: 3px;
-    padding: 12px 16px;
-    font-family: var(--mono);
-    font-size: 22px;
-    color: var(--accent);
-    letter-spacing: 4px;
-    text-transform: uppercase;
-    outline: none;
-    transition: border-color 0.2s;
-    caret-color: var(--accent);
-  }
+  .code-input { flex: 1; background: var(--bg); border: 1px solid var(--border); border-radius: 3px; padding: 12px 16px; font-family: var(--mono); font-size: 22px; color: var(--accent); letter-spacing: 4px; text-transform: uppercase; outline: none; transition: border-color 0.2s; caret-color: var(--accent); }
   .code-input::placeholder { color: var(--text-muted); letter-spacing: 2px; font-size: 16px; }
   .code-input:focus { border-color: var(--accent-dim); box-shadow: 0 0 0 3px var(--accent-glow); }
-  .scan-btn {
-    background: var(--accent);
-    color: #000;
-    border: none;
-    border-radius: 3px;
-    padding: 0 28px;
-    font-family: var(--cond);
-    font-size: 15px;
-    font-weight: 700;
-    letter-spacing: 1px;
-    text-transform: uppercase;
-    cursor: pointer;
-    transition: background 0.15s, transform 0.1s;
-    white-space: nowrap;
-  }
+  .scan-btn { background: var(--accent); color: #000; border: none; border-radius: 3px; padding: 0 28px; font-family: var(--cond); font-size: 15px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; cursor: pointer; transition: background 0.15s, transform 0.1s; white-space: nowrap; }
   .scan-btn:hover { background: #00ff88; }
   .scan-btn:active { transform: scale(0.97); }
   .scan-btn:disabled { background: var(--border); color: var(--text-muted); cursor: not-allowed; }
-
   .quick-codes { margin-top: 12px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
   .quick-label { font-family: var(--mono); font-size: 10px; color: var(--text-muted); }
-  .quick-chip {
-    font-family: var(--mono); font-size: 11px; color: var(--text-dim);
-    border: 1px solid var(--border); border-radius: 2px; padding: 3px 8px;
-    cursor: pointer; transition: all 0.15s;
-    background: transparent;
-  }
+  .quick-chip { font-family: var(--mono); font-size: 11px; color: var(--text-dim); border: 1px solid var(--border); border-radius: 2px; padding: 3px 8px; cursor: pointer; transition: all 0.15s; background: transparent; }
   .quick-chip:hover { border-color: var(--accent-dim); color: var(--accent); background: var(--accent-glow); }
 
-  /* loading */
   .loading { display: none; padding: 2rem; text-align: center; }
   .loading.active { display: block; }
   .scan-line { width: 100%; height: 2px; background: linear-gradient(90deg, transparent, var(--accent), transparent); animation: scan 1.5s ease-in-out infinite; }
-  @keyframes scan { 0% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }
+  @keyframes scan { 0%{transform:translateX(-100%)}100%{transform:translateX(100%)} }
   .loading-text { font-family: var(--mono); font-size: 12px; color: var(--accent); margin-top: 12px; letter-spacing: 2px; }
 
-  /* result */
+  .error-box { background: rgba(232,64,64,0.08); border: 1px solid rgba(232,64,64,0.3); border-radius: 4px; padding: 1.5rem; text-align: center; display: none; }
+  .error-box.active { display: block; }
+  .error-code { font-family: var(--mono); font-size: 11px; color: var(--danger); margin-bottom: 8px; letter-spacing: 2px; }
+  .error-msg { font-size: 14px; color: var(--text-dim); }
+
   .result { display: none; }
   .result.active { display: block; }
-
-  .result-header {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 4px;
-    padding: 1.25rem 1.5rem;
-    margin-bottom: 12px;
-    display: flex;
-    align-items: center;
-    gap: 20px;
-    flex-wrap: wrap;
-  }
-  .code-badge { font-family: var(--mono); font-size: 28px; font-weight: 400; color: var(--accent); letter-spacing: 4px; }
+  .result-header { background: var(--surface); border: 1px solid var(--border); border-radius: 4px; padding: 1.25rem 1.5rem; margin-bottom: 12px; display: flex; align-items: center; gap: 20px; flex-wrap: wrap; }
+  .code-badge { font-family: var(--mono); font-size: 28px; color: var(--accent); letter-spacing: 4px; }
   .result-meta { flex: 1; }
   .result-name { font-family: var(--cond); font-size: 20px; font-weight: 600; color: var(--text); line-height: 1.2; }
   .result-system { font-family: var(--mono); font-size: 11px; color: var(--text-muted); margin-top: 4px; }
@@ -159,20 +73,9 @@
 
   .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
   @media (max-width: 600px) { .grid-2 { grid-template-columns: 1fr; } }
-
-  .panel {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 4px;
-    padding: 1.25rem;
-  }
-  .panel-title {
-    font-family: var(--mono); font-size: 10px; color: var(--text-muted);
-    letter-spacing: 2px; text-transform: uppercase; margin-bottom: 12px;
-    display: flex; align-items: center; gap: 8px;
-  }
+  .panel { background: var(--surface); border: 1px solid var(--border); border-radius: 4px; padding: 1.25rem; }
+  .panel-title { font-family: var(--mono); font-size: 10px; color: var(--text-muted); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
   .panel-title::after { content: ''; flex: 1; height: 1px; background: var(--border); }
-
   .what-text { font-size: 14px; color: var(--text-dim); line-height: 1.7; }
 
   .drive-verdict { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
@@ -187,7 +90,6 @@
   .cause-item { display: flex; gap: 10px; align-items: flex-start; }
   .cause-rank { font-family: var(--mono); font-size: 10px; color: var(--accent); background: var(--accent-glow); border: 1px solid var(--border); border-radius: 2px; padding: 2px 6px; min-width: 28px; text-align: center; margin-top: 2px; }
   .cause-text { font-size: 13px; color: var(--text-dim); line-height: 1.5; }
-  .cause-prob { font-family: var(--mono); font-size: 10px; margin-top: 2px; }
 
   .cost-row { display: flex; justify-content: space-between; align-items: baseline; padding: 8px 0; border-bottom: 1px solid var(--border); }
   .cost-row:last-child { border-bottom: none; }
@@ -201,26 +103,14 @@
   .step-text { font-size: 13px; color: var(--text-dim); line-height: 1.6; }
 
   .related-row { display: flex; flex-wrap: wrap; gap: 8px; }
-  .related-chip {
-    font-family: var(--mono); font-size: 12px; color: var(--info);
-    border: 1px solid rgba(77,184,255,0.3); border-radius: 2px;
-    padding: 4px 10px; cursor: pointer; transition: all 0.15s;
-    background: rgba(77,184,255,0.05);
-  }
+  .related-chip { font-family: var(--mono); font-size: 12px; color: var(--info); border: 1px solid rgba(77,184,255,0.3); border-radius: 2px; padding: 4px 10px; cursor: pointer; transition: all 0.15s; background: rgba(77,184,255,0.05); }
   .related-chip:hover { background: rgba(77,184,255,0.15); }
-
-  .error-box { background: rgba(232,64,64,0.08); border: 1px solid rgba(232,64,64,0.3); border-radius: 4px; padding: 1.5rem; text-align: center; display: none; }
-  .error-box.active { display: block; }
-  .error-code { font-family: var(--mono); font-size: 11px; color: var(--danger); margin-bottom: 8px; letter-spacing: 2px; }
-  .error-msg { font-size: 14px; color: var(--text-dim); }
-
-  .footer { margin-top: 2rem; padding-top: 1rem; border-top: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; flex-wrap: gap; }
+  .footer { margin-top: 2rem; padding-top: 1rem; border-top: 1px solid var(--border); }
   .footer-note { font-family: var(--mono); font-size: 10px; color: var(--text-muted); }
 </style>
 </head>
 <body>
 <div class="wrap">
-
   <div class="header">
     <div class="logo-block">
       <div class="logo-eyebrow">diagnostic system v2.1</div>
@@ -254,7 +144,7 @@
 
   <div class="error-box" id="errorBox">
     <div class="error-code">// ERROR: ANALYSIS FAILED</div>
-    <div class="error-msg" id="errorMsg">Could not retrieve diagnostic data. Check your API connection.</div>
+    <div class="error-msg" id="errorMsg">Could not retrieve diagnostic data.</div>
   </div>
 
   <div class="result" id="result">
@@ -266,39 +156,20 @@
       </div>
       <div class="severity-badge" id="rSeverity"></div>
     </div>
-
     <div class="grid-2">
-      <div class="panel">
-        <div class="panel-title">what it means</div>
-        <div class="what-text" id="rWhat"></div>
-      </div>
-      <div class="panel">
-        <div class="panel-title">safe to drive?</div>
-        <div class="drive-verdict" id="rDriveVerdict"></div>
-        <div class="drive-note" id="rDriveNote"></div>
-      </div>
+      <div class="panel"><div class="panel-title">what it means</div><div class="what-text" id="rWhat"></div></div>
+      <div class="panel"><div class="panel-title">safe to drive?</div><div class="drive-verdict" id="rDriveVerdict"></div><div class="drive-note" id="rDriveNote"></div></div>
     </div>
-
     <div class="grid-2">
-      <div class="panel">
-        <div class="panel-title">likely causes</div>
-        <ul class="causes-list" id="rCauses"></ul>
-      </div>
-      <div class="panel">
-        <div class="panel-title">estimated repair cost</div>
-        <div id="rCosts"></div>
-      </div>
+      <div class="panel"><div class="panel-title">likely causes</div><ul class="causes-list" id="rCauses"></ul></div>
+      <div class="panel"><div class="panel-title">estimated repair cost</div><div id="rCosts"></div></div>
     </div>
-
     <div class="grid-2">
-      <div class="panel">
-        <div class="panel-title">diagnostic steps</div>
-        <ol class="steps-list" id="rSteps"></ol>
-      </div>
+      <div class="panel"><div class="panel-title">diagnostic steps</div><ol class="steps-list" id="rSteps"></ol></div>
       <div class="panel">
         <div class="panel-title">related codes</div>
         <div class="related-row" id="rRelated"></div>
-        <div style="margin-top: 14px;" class="panel-title">pro tip</div>
+        <div style="margin-top:14px;" class="panel-title">pro tip</div>
         <div class="what-text" id="rTip"></div>
       </div>
     </div>
@@ -307,25 +178,17 @@
   <div class="footer">
     <div class="footer-note">// powered by claude AI · for reference only · always consult a certified mechanic</div>
   </div>
-
 </div>
 
 <script>
-const loadingMsgs = [
-  'QUERYING FAULT DATABASE...',
-  'CROSS-REFERENCING TSBs...',
-  'ANALYZING SUBSYSTEMS...',
-  'COMPILING REPAIR DATA...'
-];
-
-let loadInterval;
+var loadInterval;
+var loadingMsgs = ['QUERYING FAULT DATABASE...','CROSS-REFERENCING TSBs...','ANALYZING SUBSYSTEMS...','COMPILING REPAIR DATA...'];
 
 function setCode(code) {
   document.getElementById('codeInput').value = code;
-  document.getElementById('codeInput').focus();
 }
 
-document.getElementById('codeInput').addEventListener('keydown', e => {
+document.getElementById('codeInput').addEventListener('keydown', function(e) {
   if (e.key === 'Enter') analyze();
 });
 
@@ -334,8 +197,8 @@ function showLoading() {
   document.getElementById('result').classList.remove('active');
   document.getElementById('errorBox').classList.remove('active');
   document.getElementById('scanBtn').disabled = true;
-  let i = 0;
-  loadInterval = setInterval(() => {
+  var i = 0;
+  loadInterval = setInterval(function() {
     i = (i + 1) % loadingMsgs.length;
     document.getElementById('loadingText').textContent = loadingMsgs[i];
   }, 800);
@@ -352,40 +215,38 @@ function showError(msg) {
   document.getElementById('errorBox').classList.add('active');
 }
 
-async function analyze() {
-  const code = document.getElementById('codeInput').value.trim().toUpperCase();
+function analyze() {
+  var code = document.getElementById('codeInput').value.trim().toUpperCase();
   if (!code) return;
   showLoading();
 
-  const prompt = `You are an expert automotive diagnostic technician. Analyze the OBD-II fault code "${code}" and return ONLY a valid JSON object with no markdown or extra text. Return this exact structure:
-{"code":"${code}","name":"short official name","system":"e.g. Engine","severity":"Low or Medium or High","what_it_means":"2-3 sentence explanation","safe_to_drive":"Yes or Caution or No","drive_explanation":"1-2 sentences","causes":[{"rank":1,"description":"most likely cause","probability":"~60%"},{"rank":2,"description":"second cause","probability":"~25%"},{"rank":3,"description":"third cause","probability":"~15%"}],"repair_costs":[{"repair":"fix 1","cost_range":"$X-$Y","note":"note"},{"repair":"fix 2","cost_range":"$X-$Y","note":"note"},{"repair":"fix 3","cost_range":"$X-$Y","note":"note"}],"diagnostic_steps":["step 1","step 2","step 3","step 4"],"related_codes":["P0XXX","P0XXX"],"pro_tip":"insider tip"}`;
+  var prompt = 'You are an expert automotive diagnostic technician. Analyze the OBD-II fault code "' + code + '" and return ONLY a valid JSON object with no markdown, no backticks, no extra text. Use this exact structure: {"code":"' + code + '","name":"short official name","system":"e.g. Engine","severity":"Low or Medium or High","what_it_means":"2-3 sentence plain English explanation","safe_to_drive":"Yes or Caution or No","drive_explanation":"1-2 sentences","causes":[{"rank":1,"description":"most likely cause","probability":"~60%"},{"rank":2,"description":"second cause","probability":"~25%"},{"rank":3,"description":"third cause","probability":"~15%"}],"repair_costs":[{"repair":"fix 1","cost_range":"$X-$Y","note":"note"},{"repair":"fix 2","cost_range":"$X-$Y","note":"note"},{"repair":"fix 3","cost_range":"$X-$Y","note":"note"}],"diagnostic_steps":["step 1","step 2","step 3","step 4"],"related_codes":["P0XXX","P0XXX"],"pro_tip":"one insider tip"}';
 
-  try {
-    const res = await fetch('/api/diagnose', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ code: prompt })
-    });
-    const data = await res.json();
-    const text = data.content.map(b => b.text || '').join('');
-    const clean = text.replace(/```json|```/g, '').trim();
-    const d = JSON.parse(clean);
+  fetch('/api/diagnose', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ code: prompt })
+  })
+  .then(function(res) { return res.json(); })
+  .then(function(data) {
+    var text = data.content.map(function(b) { return b.text || ''; }).join('');
+    var clean = text.replace(/```json|```/g, '').trim();
+    var d = JSON.parse(clean);
     hideLoading();
     renderResult(d);
-  } catch(err) {
+  })
+  .catch(function(err) {
     hideLoading();
-    showError('Analysis failed. Please try again.');
-  }
+    showError('Analysis failed. Please try again. Error: ' + err.message);
+  });
 }
-
-
 
 function renderResult(d) {
   document.getElementById('rCode').textContent = d.code;
   document.getElementById('rName').textContent = d.name;
   document.getElementById('rSystem').textContent = '// ' + d.system;
 
-  const sevEl = document.getElementById('rSeverity');
+  var sevEl = document.getElementById('rSeverity');
   sevEl.textContent = d.severity + ' SEVERITY';
   sevEl.className = 'severity-badge';
   if (d.severity === 'Low') sevEl.classList.add('sev-low');
@@ -394,40 +255,29 @@ function renderResult(d) {
 
   document.getElementById('rWhat').textContent = d.what_it_means;
 
-  const verdictEl = document.getElementById('rDriveVerdict');
-  const icons = { 'Yes': '✓', 'Caution': '⚠', 'No': '✕' };
-  const cls = { 'Yes': 'drive-ok', 'Caution': 'drive-caution', 'No': 'drive-no' };
-  verdictEl.innerHTML = `<div class="drive-icon ${cls[d.safe_to_drive]}">${icons[d.safe_to_drive]}</div><div class="drive-label ${cls[d.safe_to_drive]}">${d.safe_to_drive === 'Yes' ? 'Safe to drive' : d.safe_to_drive === 'Caution' ? 'Drive with caution' : 'Do not drive'}</div>`;
+  var icons = { 'Yes': '✓', 'Caution': '⚠', 'No': '✕' };
+  var cls = { 'Yes': 'drive-ok', 'Caution': 'drive-caution', 'No': 'drive-no' };
+  var labels = { 'Yes': 'Safe to drive', 'Caution': 'Drive with caution', 'No': 'Do not drive' };
+  document.getElementById('rDriveVerdict').innerHTML = '<div class="drive-icon ' + cls[d.safe_to_drive] + '">' + icons[d.safe_to_drive] + '</div><div class="drive-label ' + cls[d.safe_to_drive] + '">' + labels[d.safe_to_drive] + '</div>';
   document.getElementById('rDriveNote').textContent = d.drive_explanation;
 
-  const causesEl = document.getElementById('rCauses');
-  causesEl.innerHTML = d.causes.map(c => `
-    <li class="cause-item">
-      <span class="cause-rank">#${c.rank}</span>
-      <div>
-        <div class="cause-text">${c.description}</div>
-        <div class="cause-prob" style="color:var(--text-muted)">${c.probability}</div>
-      </div>
-    </li>`).join('');
+  document.getElementById('rCauses').innerHTML = d.causes.map(function(c) {
+    return '<li class="cause-item"><span class="cause-rank">#' + c.rank + '</span><div><div class="cause-text">' + c.description + '</div><div style="font-family:var(--mono);font-size:10px;color:var(--text-muted)">' + c.probability + '</div></div></li>';
+  }).join('');
 
-  const costsEl = document.getElementById('rCosts');
-  costsEl.innerHTML = d.repair_costs.map(r => `
-    <div class="cost-row">
-      <div>
-        <div class="cost-label">${r.repair}</div>
-        <div class="cost-note">${r.note}</div>
-      </div>
-      <div class="cost-value">${r.cost_range}</div>
-    </div>`).join('');
+  document.getElementById('rCosts').innerHTML = d.repair_costs.map(function(r) {
+    return '<div class="cost-row"><div><div class="cost-label">' + r.repair + '</div><div class="cost-note">' + r.note + '</div></div><div class="cost-value">' + r.cost_range + '</div></div>';
+  }).join('');
 
-  const stepsEl = document.getElementById('rSteps');
-  stepsEl.innerHTML = d.diagnostic_steps.map(s => `<li class="step-item"><div class="step-text">${s}</div></li>`).join('');
+  document.getElementById('rSteps').innerHTML = d.diagnostic_steps.map(function(s) {
+    return '<li class="step-item"><div class="step-text">' + s + '</div></li>';
+  }).join('');
 
-  const relEl = document.getElementById('rRelated');
-  relEl.innerHTML = d.related_codes.map(c => `<button class="related-chip" onclick="setCode('${c}');analyze()">${c}</button>`).join('');
+  document.getElementById('rRelated').innerHTML = d.related_codes.map(function(c) {
+    return '<button class="related-chip" onclick="setCode(\'' + c + '\');analyze()">' + c + '</button>';
+  }).join('');
 
   document.getElementById('rTip').textContent = d.pro_tip;
-
   document.getElementById('result').classList.add('active');
 }
 </script>
