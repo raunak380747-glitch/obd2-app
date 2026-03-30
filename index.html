@@ -402,17 +402,6 @@ Return this exact structure:
   }
 }
 
-    const data = await res.json();
-    const text = data.content.map(b => b.text || '').join('');
-    const clean = text.replace(/```json|```/g, '').trim();
-    const d = JSON.parse(clean);
-    hideLoading();
-    renderResult(d);
-  } catch (err) {
-    hideLoading();
-    showError('Analysis failed. Please check your connection and try again.');
-  }
-}
 
 function renderResult(d) {
   document.getElementById('rCode').textContent = d.code;
