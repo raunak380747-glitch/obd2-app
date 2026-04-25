@@ -1,298 +1,586 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>OBD-II Fault Code Explainer</title>
-<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Barlow:wght@300;400;500;600&family=Barlow+Condensed:wght@400;600;700&display=swap" rel="stylesheet">
-<style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  :root {
-    --bg: #0d0f0e; --surface: #141716; --surface2: #1b1e1c;
-    --border: #2a2e2b; --accent: #00e87a; --accent-dim: #00a855;
-    --accent-glow: rgba(0,232,122,0.12); --warn: #f5a623;
-    --danger: #e84040; --info: #4db8ff; --text: #e8ede9;
-    --text-muted: #6b7569; --text-dim: #9aa395;
-    --mono: 'Share Tech Mono', monospace;
-    --sans: 'Barlow', sans-serif;
-    --cond: 'Barlow Condensed', sans-serif;
-  }
-  body { background: var(--bg); color: var(--text); font-family: var(--sans); min-height: 100vh; }
-  body::before {
-    content: ''; position: fixed; inset: 0;
-    background-image: linear-gradient(rgba(0,232,122,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(0,232,122,0.03) 1px, transparent 1px);
-    background-size: 40px 40px; pointer-events: none; z-index: 0;
-  }
-  .wrap { position: relative; z-index: 1; max-width: 860px; margin: 0 auto; padding: 2rem 1.5rem 4rem; }
-  .header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 2.5rem; }
-  .logo-eyebrow { font-family: var(--mono); font-size: 10px; color: var(--accent); letter-spacing: 3px; text-transform: uppercase; margin-bottom: 6px; }
-  .logo-title { font-family: var(--cond); font-size: 36px; font-weight: 700; letter-spacing: -0.5px; line-height: 1; color: var(--text); }
-  .logo-title span { color: var(--accent); }
-  .status-pill { font-family: var(--mono); font-size: 10px; color: var(--accent); border: 1px solid var(--accent-dim); border-radius: 2px; padding: 4px 10px; display: flex; align-items: center; gap: 6px; margin-top: 6px; }
-  .status-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); animation: pulse 2s infinite; }
-  @keyframes pulse { 0%,100%{opacity:1}50%{opacity:0.3} }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LUT Invoice Generator · India Freelancers</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #f4f7fb;
+      --card: #ffffff;
+      --ink: #0f172a;
+      --muted: #475569;
+      --line: #e2e8f0;
+      --primary: #0f766e;
+      --primary-soft: #ccfbf1;
+      --danger: #b91c1c;
+      --radius: 14px;
+      --shadow: 0 10px 25px rgba(15, 23, 42, 0.08);
+    }
 
-  .scanner-box { background: var(--surface); border: 1px solid var(--border); border-radius: 4px; padding: 1.5rem; margin-bottom: 1.5rem; position: relative; overflow: hidden; }
-  .scanner-box::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, transparent, var(--accent), transparent); }
-  .scanner-label { font-family: var(--mono); font-size: 10px; color: var(--text-muted); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 10px; }
-  .input-row { display: flex; gap: 10px; align-items: stretch; }
-  .code-input { flex: 1; background: var(--bg); border: 1px solid var(--border); border-radius: 3px; padding: 12px 16px; font-family: var(--mono); font-size: 22px; color: var(--accent); letter-spacing: 4px; text-transform: uppercase; outline: none; transition: border-color 0.2s; caret-color: var(--accent); }
-  .code-input::placeholder { color: var(--text-muted); letter-spacing: 2px; font-size: 16px; }
-  .code-input:focus { border-color: var(--accent-dim); box-shadow: 0 0 0 3px var(--accent-glow); }
-  .scan-btn { background: var(--accent); color: #000; border: none; border-radius: 3px; padding: 0 28px; font-family: var(--cond); font-size: 15px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; cursor: pointer; transition: background 0.15s, transform 0.1s; white-space: nowrap; }
-  .scan-btn:hover { background: #00ff88; }
-  .scan-btn:active { transform: scale(0.97); }
-  .scan-btn:disabled { background: var(--border); color: var(--text-muted); cursor: not-allowed; }
-  .quick-codes { margin-top: 12px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
-  .quick-label { font-family: var(--mono); font-size: 10px; color: var(--text-muted); }
-  .quick-chip { font-family: var(--mono); font-size: 11px; color: var(--text-dim); border: 1px solid var(--border); border-radius: 2px; padding: 3px 8px; cursor: pointer; transition: all 0.15s; background: transparent; }
-  .quick-chip:hover { border-color: var(--accent-dim); color: var(--accent); background: var(--accent-glow); }
+    * { box-sizing: border-box; }
 
-  .loading { display: none; padding: 2rem; text-align: center; }
-  .loading.active { display: block; }
-  .scan-line { width: 100%; height: 2px; background: linear-gradient(90deg, transparent, var(--accent), transparent); animation: scan 1.5s ease-in-out infinite; }
-  @keyframes scan { 0%{transform:translateX(-100%)}100%{transform:translateX(100%)} }
-  .loading-text { font-family: var(--mono); font-size: 12px; color: var(--accent); margin-top: 12px; letter-spacing: 2px; }
+    body {
+      margin: 0;
+      font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+      color: var(--ink);
+      background: linear-gradient(160deg, #eff6ff 0%, #f8fafc 35%, #f0fdfa 100%);
+      min-height: 100vh;
+    }
 
-  .error-box { background: rgba(232,64,64,0.08); border: 1px solid rgba(232,64,64,0.3); border-radius: 4px; padding: 1.5rem; text-align: center; display: none; }
-  .error-box.active { display: block; }
-  .error-code { font-family: var(--mono); font-size: 11px; color: var(--danger); margin-bottom: 8px; letter-spacing: 2px; }
-  .error-msg { font-size: 14px; color: var(--text-dim); }
+    .container {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 28px 18px 56px;
+      display: grid;
+      grid-template-columns: 1.1fr 1fr;
+      gap: 18px;
+    }
 
-  .result { display: none; }
-  .result.active { display: block; }
-  .result-header { background: var(--surface); border: 1px solid var(--border); border-radius: 4px; padding: 1.25rem 1.5rem; margin-bottom: 12px; display: flex; align-items: center; gap: 20px; flex-wrap: wrap; }
-  .code-badge { font-family: var(--mono); font-size: 28px; color: var(--accent); letter-spacing: 4px; }
-  .result-meta { flex: 1; }
-  .result-name { font-family: var(--cond); font-size: 20px; font-weight: 600; color: var(--text); line-height: 1.2; }
-  .result-system { font-family: var(--mono); font-size: 11px; color: var(--text-muted); margin-top: 4px; }
-  .severity-badge { font-family: var(--cond); font-size: 12px; font-weight: 700; letter-spacing: 1px; padding: 5px 12px; border-radius: 2px; text-transform: uppercase; }
-  .sev-low { background: rgba(0,232,122,0.12); color: var(--accent); border: 1px solid var(--accent-dim); }
-  .sev-medium { background: rgba(245,166,35,0.12); color: var(--warn); border: 1px solid var(--warn); }
-  .sev-high { background: rgba(232,64,64,0.12); color: var(--danger); border: 1px solid var(--danger); }
+    @media (max-width: 1024px) {
+      .container { grid-template-columns: 1fr; }
+    }
 
-  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
-  @media (max-width: 600px) { .grid-2 { grid-template-columns: 1fr; } }
-  .panel { background: var(--surface); border: 1px solid var(--border); border-radius: 4px; padding: 1.25rem; }
-  .panel-title { font-family: var(--mono); font-size: 10px; color: var(--text-muted); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
-  .panel-title::after { content: ''; flex: 1; height: 1px; background: var(--border); }
-  .what-text { font-size: 14px; color: var(--text-dim); line-height: 1.7; }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
 
-  .drive-verdict { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
-  .drive-icon { font-size: 28px; }
-  .drive-label { font-family: var(--cond); font-size: 18px; font-weight: 600; }
-  .drive-ok { color: var(--accent); }
-  .drive-caution { color: var(--warn); }
-  .drive-no { color: var(--danger); }
-  .drive-note { font-size: 13px; color: var(--text-dim); line-height: 1.6; }
+    .builder { padding: 22px; }
 
-  .causes-list { list-style: none; display: flex; flex-direction: column; gap: 8px; }
-  .cause-item { display: flex; gap: 10px; align-items: flex-start; }
-  .cause-rank { font-family: var(--mono); font-size: 10px; color: var(--accent); background: var(--accent-glow); border: 1px solid var(--border); border-radius: 2px; padding: 2px 6px; min-width: 28px; text-align: center; margin-top: 2px; }
-  .cause-text { font-size: 13px; color: var(--text-dim); line-height: 1.5; }
+    .brand {
+      display: flex;
+      justify-content: space-between;
+      gap: 14px;
+      align-items: flex-start;
+      margin-bottom: 18px;
+    }
 
-  .cost-row { display: flex; justify-content: space-between; align-items: baseline; padding: 8px 0; border-bottom: 1px solid var(--border); }
-  .cost-row:last-child { border-bottom: none; }
-  .cost-label { font-size: 13px; color: var(--text-dim); }
-  .cost-value { font-family: var(--mono); font-size: 14px; color: var(--text); }
-  .cost-note { font-family: var(--mono); font-size: 10px; color: var(--text-muted); }
+    .brand h1 {
+      font-size: clamp(1.35rem, 2.5vw, 1.8rem);
+      margin: 0;
+      letter-spacing: -0.02em;
+    }
 
-  .steps-list { list-style: none; counter-reset: steps; display: flex; flex-direction: column; gap: 10px; }
-  .step-item { counter-increment: steps; display: flex; gap: 12px; align-items: flex-start; }
-  .step-item::before { content: counter(steps); font-family: var(--mono); font-size: 11px; color: var(--accent); background: var(--accent-glow); border: 1px solid var(--border); border-radius: 2px; min-width: 24px; height: 22px; display: flex; align-items: center; justify-content: center; margin-top: 1px; flex-shrink: 0; }
-  .step-text { font-size: 13px; color: var(--text-dim); line-height: 1.6; }
+    .eyebrow {
+      color: var(--muted);
+      font-size: 0.84rem;
+      margin-bottom: 8px;
+      font-weight: 600;
+    }
 
-  .related-row { display: flex; flex-wrap: wrap; gap: 8px; }
-  .related-chip { font-family: var(--mono); font-size: 12px; color: var(--info); border: 1px solid rgba(77,184,255,0.3); border-radius: 2px; padding: 4px 10px; cursor: pointer; transition: all 0.15s; background: rgba(77,184,255,0.05); }
-  .related-chip:hover { background: rgba(77,184,255,0.15); }
-  .footer { margin-top: 2rem; padding-top: 1rem; border-top: 1px solid var(--border); }
-  .footer-note { font-family: var(--mono); font-size: 10px; color: var(--text-muted); }
-</style>
+    .pill {
+      background: var(--primary-soft);
+      color: #134e4a;
+      border: 1px solid #99f6e4;
+      padding: 8px 11px;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .grid {
+      display: grid;
+      gap: 12px;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .grid-3 {
+      display: grid;
+      gap: 12px;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    @media (max-width: 640px) {
+      .grid, .grid-3 { grid-template-columns: 1fr; }
+    }
+
+    label {
+      display: block;
+      font-size: 0.77rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      font-weight: 700;
+      color: #334155;
+      margin-bottom: 6px;
+    }
+
+    input, textarea, select {
+      width: 100%;
+      border: 1px solid #cbd5e1;
+      border-radius: 10px;
+      padding: 10px 12px;
+      font: inherit;
+      color: var(--ink);
+      background: #fff;
+    }
+
+    textarea { min-height: 80px; resize: vertical; }
+
+    input:focus, textarea:focus, select:focus {
+      outline: 3px solid #ccfbf1;
+      border-color: var(--primary);
+    }
+
+    .section {
+      border-top: 1px solid var(--line);
+      padding-top: 14px;
+      margin-top: 14px;
+    }
+
+    .section h2 {
+      font-size: 0.95rem;
+      margin: 0 0 12px;
+    }
+
+    .items {
+      display: grid;
+      gap: 10px;
+    }
+
+    .item-row {
+      display: grid;
+      grid-template-columns: 2.2fr 0.7fr 1fr 0.4fr;
+      gap: 8px;
+      align-items: end;
+    }
+
+    @media (max-width: 840px) {
+      .item-row { grid-template-columns: 1fr 1fr; }
+      .item-row .remove-wrap { grid-column: span 2; }
+    }
+
+    .btn {
+      border: 1px solid var(--line);
+      background: #fff;
+      color: var(--ink);
+      border-radius: 10px;
+      font: inherit;
+      padding: 10px 12px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+
+    .btn:hover { background: #f8fafc; }
+
+    .btn-primary {
+      background: var(--primary);
+      color: #fff;
+      border-color: var(--primary);
+    }
+
+    .btn-primary:hover { background: #115e59; }
+
+    .btn-danger {
+      color: var(--danger);
+      border-color: #fecaca;
+      background: #fff5f5;
+    }
+
+    .actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 16px;
+    }
+
+    .preview {
+      padding: 20px;
+      position: sticky;
+      top: 14px;
+      height: fit-content;
+    }
+
+    .invoice-sheet {
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 18px;
+      background: #fff;
+    }
+
+    .invoice-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      border-bottom: 1px solid var(--line);
+      padding-bottom: 12px;
+      margin-bottom: 12px;
+    }
+
+    .invoice-title {
+      margin: 0;
+      font-size: 1.4rem;
+      letter-spacing: -0.02em;
+    }
+
+    .muted { color: var(--muted); }
+
+    .split {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 12px;
+      font-size: 0.92rem;
+    }
+
+    th, td {
+      border-bottom: 1px solid var(--line);
+      text-align: left;
+      padding: 8px;
+      vertical-align: top;
+    }
+
+    th { background: #f8fafc; font-size: 0.75rem; text-transform: uppercase; color: #334155; }
+
+    .totals { margin-top: 10px; margin-left: auto; width: min(330px, 100%); }
+    .totals .row { display: flex; justify-content: space-between; padding: 6px 0; }
+    .totals .grand { border-top: 1px solid var(--line); margin-top: 6px; padding-top: 8px; font-size: 1rem; font-weight: 800; }
+
+    .lut-note {
+      margin-top: 14px;
+      background: #f0fdfa;
+      border: 1px solid #99f6e4;
+      border-radius: 10px;
+      padding: 10px;
+      font-size: 0.86rem;
+      line-height: 1.45;
+    }
+
+    .tiny { font-size: 0.78rem; }
+    .right { text-align: right; }
+
+    @media print {
+      body { background: #fff; }
+      .builder, .preview > h2, .actions, .print-hide { display: none !important; }
+      .container { max-width: none; padding: 0; display: block; }
+      .preview { position: static; padding: 0; box-shadow: none; border: none; }
+      .invoice-sheet { border: none; border-radius: 0; }
+    }
+  </style>
 </head>
 <body>
-<div class="wrap">
-  <div class="header">
-    <div class="logo-block">
-      <div class="logo-eyebrow">diagnostic system v2.1</div>
-      <div class="logo-title">OBD<span>-II</span> INTEL</div>
-    </div>
-    <div style="text-align:right;">
-      <div class="status-pill"><span class="status-dot"></span> AI ENGINE ONLINE</div>
-    </div>
-  </div>
-
-  <div class="scanner-box">
-    <div class="scanner-label">// enter fault code</div>
-    <div class="input-row">
-      <input class="code-input" id="codeInput" type="text" maxlength="7" placeholder="P0301" autocomplete="off" spellcheck="false" />
-      <button class="scan-btn" id="scanBtn" onclick="analyze()">DIAGNOSE</button>
-    </div>
-    <div class="quick-codes">
-      <span class="quick-label">try:</span>
-      <button class="quick-chip" onclick="setCode('P0301')">P0301</button>
-      <button class="quick-chip" onclick="setCode('P0420')">P0420</button>
-      <button class="quick-chip" onclick="setCode('P0171')">P0171</button>
-      <button class="quick-chip" onclick="setCode('P0455')">P0455</button>
-      <button class="quick-chip" onclick="setCode('C0035')">C0035</button>
-    </div>
-  </div>
-
-  <div class="loading" id="loading">
-    <div class="scan-line"></div>
-    <div class="loading-text" id="loadingText">QUERYING FAULT DATABASE...</div>
-  </div>
-
-  <div class="error-box" id="errorBox">
-    <div class="error-code">// ERROR: ANALYSIS FAILED</div>
-    <div class="error-msg" id="errorMsg">Could not retrieve diagnostic data.</div>
-  </div>
-
-  <div class="result" id="result">
-    <div class="result-header">
-      <div class="code-badge" id="rCode"></div>
-      <div class="result-meta">
-        <div class="result-name" id="rName"></div>
-        <div class="result-system" id="rSystem"></div>
+  <main class="container">
+    <section class="card builder print-hide">
+      <div class="brand">
+        <div>
+          <div class="eyebrow">India Freelancers · Export of Services</div>
+          <h1>Professional Invoice Generator (LUT-ready)</h1>
+        </div>
+        <div class="pill">No login required</div>
       </div>
-      <div class="severity-badge" id="rSeverity"></div>
-    </div>
-    <div class="grid-2">
-      <div class="panel"><div class="panel-title">what it means</div><div class="what-text" id="rWhat"></div></div>
-      <div class="panel"><div class="panel-title">safe to drive?</div><div class="drive-verdict" id="rDriveVerdict"></div><div class="drive-note" id="rDriveNote"></div></div>
-    </div>
-    <div class="grid-2">
-      <div class="panel"><div class="panel-title">likely causes</div><ul class="causes-list" id="rCauses"></ul></div>
-      <div class="panel"><div class="panel-title">estimated repair cost</div><div id="rCosts"></div></div>
-    </div>
-    <div class="grid-2">
-      <div class="panel"><div class="panel-title">diagnostic steps</div><ol class="steps-list" id="rSteps"></ol></div>
-      <div class="panel">
-        <div class="panel-title">related codes</div>
-        <div class="related-row" id="rRelated"></div>
-        <div style="margin-top:14px;" class="panel-title">pro tip</div>
-        <div class="what-text" id="rTip"></div>
+
+      <div class="grid">
+        <div>
+          <label for="freelancerName">Your Name / Business</label>
+          <input id="freelancerName" placeholder="Ananya Sharma" />
+        </div>
+        <div>
+          <label for="freelancerAddress">Your Address (India)</label>
+          <input id="freelancerAddress" placeholder="Bengaluru, Karnataka, India" />
+        </div>
+        <div>
+          <label for="freelancerGstin">GSTIN (optional)</label>
+          <input id="freelancerGstin" placeholder="29ABCDE1234F1Z5" />
+        </div>
+        <div>
+          <label for="lutNumber">LUT ARN / Ref. No.</label>
+          <input id="lutNumber" placeholder="AD290425000123X" />
+        </div>
       </div>
-    </div>
-  </div>
 
-  <div class="footer">
-    <div class="footer-note">// powered by claude AI · for reference only · always consult a certified mechanic</div>
-  </div>
-</div>
+      <div class="section">
+        <h2>Invoice basics</h2>
+        <div class="grid-3">
+          <div>
+            <label for="invoiceNumber">Invoice Number</label>
+            <input id="invoiceNumber" placeholder="INV-2026-001" />
+          </div>
+          <div>
+            <label for="invoiceDate">Invoice Date</label>
+            <input id="invoiceDate" type="date" />
+          </div>
+          <div>
+            <label for="dueDate">Due Date</label>
+            <input id="dueDate" type="date" />
+          </div>
+        </div>
+      </div>
 
-<script>
-var loadInterval;
-var loadingMsgs = ['QUERYING FAULT DATABASE...','CROSS-REFERENCING TSBs...','ANALYZING SUBSYSTEMS...','COMPILING REPAIR DATA...'];
+      <div class="section">
+        <h2>Client (outside India)</h2>
+        <div class="grid">
+          <div>
+            <label for="clientName">Client Name / Company</label>
+            <input id="clientName" placeholder="Northstar Labs Inc." />
+          </div>
+          <div>
+            <label for="clientCountry">Country of Destination</label>
+            <input id="clientCountry" placeholder="United States" />
+          </div>
+          <div>
+            <label for="clientAddress">Client Address</label>
+            <textarea id="clientAddress" placeholder="123 Mission St, San Francisco, CA"></textarea>
+          </div>
+          <div>
+            <label for="currency">Currency</label>
+            <select id="currency">
+              <option value="USD">USD ($)</option>
+              <option value="EUR">EUR (€)</option>
+              <option value="GBP">GBP (£)</option>
+              <option value="INR">INR (₹)</option>
+            </select>
+            <label for="placeOfSupply" style="margin-top:10px;">Place of Supply</label>
+            <input id="placeOfSupply" placeholder="Outside India" value="Outside India" />
+          </div>
+        </div>
+      </div>
 
-function setCode(code) {
-  document.getElementById('codeInput').value = code;
-}
+      <div class="section">
+        <h2>Line items</h2>
+        <div id="items" class="items"></div>
+        <button class="btn" id="addItemBtn" type="button">+ Add line item</button>
+      </div>
 
-document.getElementById('codeInput').addEventListener('keydown', function(e) {
-  if (e.key === 'Enter') analyze();
-});
+      <div class="section">
+        <h2>Notes</h2>
+        <div>
+          <label for="paymentTerms">Payment Terms</label>
+          <input id="paymentTerms" placeholder="Payable within 15 days via wire transfer" />
+        </div>
+        <div style="margin-top:10px;">
+          <label for="extraNotes">Additional Notes</label>
+          <textarea id="extraNotes" placeholder="Thank you for your business."></textarea>
+        </div>
+      </div>
 
-function showLoading() {
-  document.getElementById('loading').classList.add('active');
-  document.getElementById('result').classList.remove('active');
-  document.getElementById('errorBox').classList.remove('active');
-  document.getElementById('scanBtn').disabled = true;
-  var i = 0;
-  loadInterval = setInterval(function() {
-    i = (i + 1) % loadingMsgs.length;
-    document.getElementById('loadingText').textContent = loadingMsgs[i];
-  }, 800);
-}
+      <div class="actions">
+        <button class="btn btn-primary" id="printBtn" type="button">Download / Print Invoice (PDF)</button>
+        <button class="btn" id="sampleBtn" type="button">Load Sample Data</button>
+      </div>
+    </section>
 
-function hideLoading() {
-  clearInterval(loadInterval);
-  document.getElementById('loading').classList.remove('active');
-  document.getElementById('scanBtn').disabled = false;
-}
+    <section class="card preview">
+      <h2 style="margin:0 0 10px;">Live Invoice Preview</h2>
+      <article class="invoice-sheet" id="invoiceSheet">
+        <header class="invoice-head">
+          <div>
+            <h3 class="invoice-title">TAX INVOICE</h3>
+            <div class="tiny muted">Export of services from India</div>
+          </div>
+          <div class="right tiny">
+            <div><strong>Invoice #:</strong> <span data-bind="invoiceNumber">—</span></div>
+            <div><strong>Date:</strong> <span data-bind="invoiceDate">—</span></div>
+            <div><strong>Due:</strong> <span data-bind="dueDate">—</span></div>
+          </div>
+        </header>
 
-function showError(msg) {
-  document.getElementById('errorMsg').textContent = msg;
-  document.getElementById('errorBox').classList.add('active');
-}
+        <section class="split tiny">
+          <div>
+            <strong>From</strong><br>
+            <span data-bind="freelancerName">—</span><br>
+            <span data-bind="freelancerAddress">—</span><br>
+            GSTIN: <span data-bind="freelancerGstin">N/A</span>
+          </div>
+          <div>
+            <strong>Bill To</strong><br>
+            <span data-bind="clientName">—</span><br>
+            <span data-bind="clientAddress">—</span><br>
+            Country: <span data-bind="clientCountry">—</span>
+          </div>
+        </section>
 
-function analyze() {
-  var codeInput = document.getElementById('codeInput').value.trim().toUpperCase();
-  if (!codeInput) return;
-  showLoading();
+        <table>
+          <thead>
+            <tr>
+              <th>Description</th>
+              <th class="right">Qty</th>
+              <th class="right">Rate</th>
+              <th class="right">Amount</th>
+            </tr>
+          </thead>
+          <tbody id="previewItems"></tbody>
+        </table>
 
-  // Optimized prompt for reliable JSON extraction
-  var prompt = 'Analyze the OBD-II fault code "' + codeInput + '" and return ONLY a valid JSON object. Do not include any conversational text. Use this structure: {"code":"' + codeInput + '","name":"short official name","system":"e.g. Engine","severity":"Low or Medium or High","what_it_means":"2-3 sentence explanation","safe_to_drive":"Yes or Caution or No","drive_explanation":"1-2 sentences","causes":[{"rank":1,"description":"cause","probability":"~60%"},{"rank":2,"description":"cause","probability":"~25%"},{"rank":3,"description":"cause","probability":"~15%"}],"repair_costs":[{"repair":"fix","cost_range":"$X-$Y","note":"note"}],"diagnostic_steps":["step 1","step 2"],"related_codes":["P0XXX"],"pro_tip":"one tip"}';
+        <div class="totals tiny">
+          <div class="row"><span>Subtotal</span> <span id="subtotalText">USD 0.00</span></div>
+          <div class="row"><span>IGST</span> <span>0% (LUT/Bond)</span></div>
+          <div class="row grand"><span>Total</span> <span id="totalText">USD 0.00</span></div>
+        </div>
 
-  fetch('/api/diagnose', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ code: prompt })
-  })
-  .then(function(res) {
-    return res.json().then(function(payload) {
-      if (!res.ok) throw new Error(payload.error || 'Server error');
-      return payload;
-    });
-  })
-  .then(function(data) {
-    // Anthropic returns content in an array. We need the first item's text.
-    var rawText = data.content[0].text;
+        <div class="lut-note">
+          <strong>GST LUT Endorsement:</strong>
+          <div id="lutLine">SUPPLY MEANT FOR EXPORT UNDER BOND OR LETTER OF UNDERTAKING WITHOUT PAYMENT OF IGST.</div>
+          <div class="tiny" style="margin-top:6px;">LUT Reference: <span data-bind="lutNumber">—</span> · Place of Supply: <span data-bind="placeOfSupply">Outside India</span></div>
+        </div>
 
-    // Use RegEx to extract only the JSON part (in case the AI adds markdown or text)
-    var jsonMatch = rawText.match(/\{[\s\S]*\}/);
-    if (!jsonMatch) throw new Error("Could not find valid JSON in AI response.");
-    
-    var parsedData = JSON.parse(jsonMatch[0]);
-    
-    hideLoading();
-    renderResult(parsedData);
-  })
-  .catch(function(err) {
-    hideLoading();
-    console.error('UI Error:', err);
-    showError(err.message);
-  });
-}
+        <section class="tiny" style="margin-top:12px; line-height:1.5;">
+          <div><strong>Payment Terms:</strong> <span data-bind="paymentTerms">—</span></div>
+          <div style="margin-top:4px;"><strong>Notes:</strong> <span data-bind="extraNotes">—</span></div>
+        </section>
+      </article>
+    </section>
+  </main>
 
-function renderResult(d) {
-  document.getElementById('rCode').textContent = d.code;
-  document.getElementById('rName').textContent = d.name;
-  document.getElementById('rSystem').textContent = '// ' + d.system;
+  <script>
+    const fields = [
+      'freelancerName','freelancerAddress','freelancerGstin','lutNumber','invoiceNumber','invoiceDate',
+      'dueDate','clientName','clientCountry','clientAddress','paymentTerms','extraNotes','placeOfSupply'
+    ];
 
-  var sevEl = document.getElementById('rSeverity');
-  sevEl.textContent = d.severity + ' SEVERITY';
-  sevEl.className = 'severity-badge';
-  if (d.severity === 'Low') sevEl.classList.add('sev-low');
-  else if (d.severity === 'Medium') sevEl.classList.add('sev-medium');
-  else sevEl.classList.add('sev-high');
+    const currencyMap = {
+      USD: { symbol: '$', locale: 'en-US' },
+      EUR: { symbol: '€', locale: 'de-DE' },
+      GBP: { symbol: '£', locale: 'en-GB' },
+      INR: { symbol: '₹', locale: 'en-IN' }
+    };
 
-  document.getElementById('rWhat').textContent = d.what_it_means;
+    const itemsRoot = document.getElementById('items');
 
-  var icons = { 'Yes': '✓', 'Caution': '⚠', 'No': '✕' };
-  var cls = { 'Yes': 'drive-ok', 'Caution': 'drive-caution', 'No': 'drive-no' };
-  var labels = { 'Yes': 'Safe to drive', 'Caution': 'Drive with caution', 'No': 'Do not drive' };
-  document.getElementById('rDriveVerdict').innerHTML = '<div class="drive-icon ' + cls[d.safe_to_drive] + '">' + icons[d.safe_to_drive] + '</div><div class="drive-label ' + cls[d.safe_to_drive] + '">' + labels[d.safe_to_drive] + '</div>';
-  document.getElementById('rDriveNote').textContent = d.drive_explanation;
+    function formatAmount(value) {
+      const code = document.getElementById('currency').value;
+      const cfg = currencyMap[code];
+      return `${code} ${Number(value || 0).toLocaleString(cfg.locale, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+    }
 
-  document.getElementById('rCauses').innerHTML = d.causes.map(function(c) {
-    return '<li class="cause-item"><span class="cause-rank">#' + c.rank + '</span><div><div class="cause-text">' + c.description + '</div><div style="font-family:var(--mono);font-size:10px;color:var(--text-muted)">' + c.probability + '</div></div></li>';
-  }).join('');
+    function addItem(item = { desc: '', qty: 1, rate: 0 }) {
+      const wrap = document.createElement('div');
+      wrap.className = 'item-row';
+      wrap.innerHTML = `
+        <div>
+          <label>Description</label>
+          <input class="item-desc" placeholder="UI/UX design sprint" value="${item.desc.replace(/"/g, '&quot;')}" />
+        </div>
+        <div>
+          <label>Qty</label>
+          <input class="item-qty" type="number" min="0" step="0.01" value="${item.qty}" />
+        </div>
+        <div>
+          <label>Rate</label>
+          <input class="item-rate" type="number" min="0" step="0.01" value="${item.rate}" />
+        </div>
+        <div class="remove-wrap">
+          <button type="button" class="btn btn-danger remove-item" style="margin-top:22px; width:100%;">Remove</button>
+        </div>`;
+      itemsRoot.appendChild(wrap);
 
-  document.getElementById('rCosts').innerHTML = d.repair_costs.map(function(r) {
-    return '<div class="cost-row"><div><div class="cost-label">' + r.repair + '</div><div class="cost-note">' + r.note + '</div></div><div class="cost-value">' + r.cost_range + '</div></div>';
-  }).join('');
+      wrap.querySelectorAll('input').forEach((el) => el.addEventListener('input', refreshPreview));
+      wrap.querySelector('.remove-item').addEventListener('click', () => {
+        wrap.remove();
+        refreshPreview();
+      });
+      refreshPreview();
+    }
 
-  document.getElementById('rSteps').innerHTML = d.diagnostic_steps.map(function(s) {
-    return '<li class="step-item"><div class="step-text">' + s + '</div></li>';
-  }).join('');
+    function getItems() {
+      return [...document.querySelectorAll('.item-row')].map((row) => ({
+        desc: row.querySelector('.item-desc').value.trim(),
+        qty: parseFloat(row.querySelector('.item-qty').value) || 0,
+        rate: parseFloat(row.querySelector('.item-rate').value) || 0
+      })).filter((x) => x.desc || x.qty || x.rate);
+    }
 
-  document.getElementById('rRelated').innerHTML = d.related_codes.map(function(c) {
-    return '<button class="related-chip" onclick="setCode(\'' + c + '\');analyze()">' + c + '</button>';
-  }).join('');
+    function bindText(id, fallback = '—') {
+      const value = document.getElementById(id).value.trim();
+      document.querySelectorAll(`[data-bind="${id}"]`).forEach((node) => {
+        node.textContent = value || fallback;
+      });
+    }
 
-  document.getElementById('rTip').textContent = d.pro_tip;
-  document.getElementById('result').classList.add('active');
-}
-</script>
+    function humanDate(value) {
+      if (!value) return '—';
+      const dt = new Date(value + 'T00:00:00');
+      if (Number.isNaN(dt.getTime())) return value;
+      return dt.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+    }
+
+    function refreshPreview() {
+      fields.forEach((id) => bindText(id, id === 'freelancerGstin' ? 'N/A' : '—'));
+      document.querySelector('[data-bind="invoiceDate"]').textContent = humanDate(document.getElementById('invoiceDate').value);
+      document.querySelector('[data-bind="dueDate"]').textContent = humanDate(document.getElementById('dueDate').value);
+
+      const items = getItems();
+      const previewItems = document.getElementById('previewItems');
+      previewItems.innerHTML = '';
+
+      if (!items.length) {
+        const tr = document.createElement('tr');
+        tr.innerHTML = '<td colspan="4" class="muted">No line items added yet.</td>';
+        previewItems.appendChild(tr);
+      }
+
+      let subtotal = 0;
+      items.forEach((it) => {
+        const amount = it.qty * it.rate;
+        subtotal += amount;
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${it.desc || 'Service'}</td>
+          <td class="right">${it.qty.toFixed(2)}</td>
+          <td class="right">${formatAmount(it.rate)}</td>
+          <td class="right">${formatAmount(amount)}</td>`;
+        previewItems.appendChild(tr);
+      });
+
+      document.getElementById('subtotalText').textContent = formatAmount(subtotal);
+      document.getElementById('totalText').textContent = formatAmount(subtotal);
+    }
+
+    function loadSample() {
+      const today = new Date();
+      const due = new Date(Date.now() + 14 * 24 * 60 * 60 * 1000);
+      const toIso = (d) => d.toISOString().slice(0, 10);
+
+      const sample = {
+        freelancerName: 'Aarav Mehta',
+        freelancerAddress: 'Pune, Maharashtra, India',
+        freelancerGstin: '27ABCDE1234F1Z2',
+        lutNumber: 'AD270426001234Q',
+        invoiceNumber: 'INV-2026-014',
+        invoiceDate: toIso(today),
+        dueDate: toIso(due),
+        clientName: 'Orbit Digital LLC',
+        clientCountry: 'United States',
+        clientAddress: '200 Park Ave, New York, NY, USA',
+        paymentTerms: 'Payable in 14 days via international wire transfer',
+        extraNotes: 'Bank charges to be borne by client. Thank you for the opportunity.',
+        placeOfSupply: 'Outside India'
+      };
+
+      Object.entries(sample).forEach(([key, value]) => {
+        const field = document.getElementById(key);
+        if (field) field.value = value;
+      });
+
+      document.getElementById('currency').value = 'USD';
+      itemsRoot.innerHTML = '';
+      addItem({ desc: 'SEO content strategy and execution - March 2026', qty: 1, rate: 900 });
+      addItem({ desc: 'Technical blog writing (4 articles)', qty: 4, rate: 180 });
+      refreshPreview();
+    }
+
+    document.getElementById('addItemBtn').addEventListener('click', () => addItem());
+    document.getElementById('printBtn').addEventListener('click', () => window.print());
+    document.getElementById('sampleBtn').addEventListener('click', loadSample);
+
+    fields.forEach((id) => document.getElementById(id).addEventListener('input', refreshPreview));
+    document.getElementById('currency').addEventListener('change', refreshPreview);
+
+    addItem({ desc: 'Service engagement', qty: 1, rate: 0 });
+
+    const today = new Date().toISOString().slice(0,10);
+    document.getElementById('invoiceDate').value = today;
+    refreshPreview();
+  </script>
 </body>
 </html>
